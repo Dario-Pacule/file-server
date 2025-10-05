@@ -7,12 +7,6 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - PORT=3000
-      - JWT_SECRET=${JWT_SECRET:-sua-chave-secreta-super-segura-aqui-mude-em-producao}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
     volumes:
       # Volume para persistir arquivos de upload
       - ./uploads:/app/uploads

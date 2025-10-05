@@ -4,23 +4,7 @@ Configuração simplificada usando apenas Dockerfile e docker-compose.yml.
 
 ## 🚀 Início Rápido
 
-### 1. Configurar Variáveis de Ambiente
-
-```bash
-# Copiar arquivo de exemplo
-cp env.example .env
-
-# Editar com suas configurações
-nano .env
-```
-
-**Variáveis importantes:**
-
-- `JWT_SECRET`: Chave secreta para autenticação (mude em produção!)
-- `ADMIN_PASSWORD`: Senha do administrador (mude em produção!)
-- `ALLOWED_ORIGINS`: Domínios permitidos para CORS
-
-### 2. Executar com Docker
+### 1. Executar com Docker
 
 ```bash
 # Construir e iniciar
@@ -33,12 +17,27 @@ docker-compose logs -f
 docker-compose down
 ```
 
+### 2. Configurar no Provedor (Coolify/Heroku/etc)
+
+Configure as seguintes variáveis de ambiente no painel do seu provedor:
+
+**Variáveis obrigatórias:**
+
+- `JWT_SECRET`: Chave secreta para autenticação (ex: `sua-chave-super-segura-com-32-caracteres`)
+- `ADMIN_PASSWORD`: Senha do administrador (ex: `MinhaSenh@123!`)
+- `ALLOWED_ORIGINS`: Domínios permitidos para CORS (ex: `https://seudominio.com`)
+
+**Variáveis opcionais:**
+
+- `PORT`: Porta do servidor (padrão: `3000`)
+- `NODE_ENV`: Ambiente (padrão: `production`)
+
 ### 3. Acessar o Servidor
 
-- **URL**: http://localhost:3000
-- **Health Check**: http://localhost:3000/health
-- **Upload**: POST http://localhost:3000/upload
-- **Listar arquivos**: GET http://localhost:3000/files (requer autenticação)
+- **URL**: http://localhost:3000 (local) ou https://seu-dominio.com (produção)
+- **Health Check**: `/health`
+- **Upload**: POST `/upload`
+- **Listar arquivos**: GET `/files` (requer autenticação)
 
 ## 🔧 Comandos Úteis
 
@@ -67,7 +66,6 @@ file-server/
 ├── Dockerfile              # Imagem da aplicação
 ├── docker-compose.yml      # Configuração do serviço
 ├── .dockerignore           # Arquivos ignorados
-├── .env                    # Variáveis de ambiente
 ├── server.js               # Código da aplicação
 ├── package.json            # Dependências
 └── uploads/                # Arquivos enviados (bind mount)
@@ -128,6 +126,79 @@ git pull
 docker-compose up -d --build
 ```
 
+## 🚀 Deploy no Coolify
+
+### 1. Preparar o Repositório
+
+```bash
+# Fazer commit dos arquivos
+git add .
+git commit -m "Add Docker configuration"
+git push origin main
+```
+
+### 2. Configurar no Coolify
+
+1. **Criar novo projeto** no Coolify
+2. **Conectar repositório** (GitHub/GitLab)
+3. **Configurar variáveis de ambiente:**
+   - `JWT_SECRET`: Sua chave secreta (32+ caracteres)
+   - `ADMIN_PASSWORD`: Senha forte do admin
+   - `ALLOWED_ORIGINS`: Seu domínio (ex: `https://seuapp.coolify.io`)
+
+### 3. Deploy Automático
+
+O Coolify irá:
+
+- ✅ Detectar o `Dockerfile`
+- ✅ Construir a imagem automaticamente
+- ✅ Configurar rede e volumes
+- ✅ Aplicar as variáveis de ambiente
+- ✅ Disponibilizar o serviço
+
+### 4. Verificar Deploy
+
+```bash
+# Testar health check
+curl https://seuapp.coolify.io/health
+
+# Testar upload (com autenticação)
+curl -X POST https://seuapp.coolify.io/upload \
+  -H "Authorization: Bearer SEU_TOKEN" \
+  -F "file=@arquivo.pdf"
+```
+
+## 🔧 Comandos para Provedores
+
+### Coolify
+
+- Acesse o painel web para gerenciar
+- Logs em tempo real disponíveis
+- Redeploy automático com git push
+
+### Heroku
+
+```bash
+# Deploy
+git push heroku main
+
+# Ver logs
+heroku logs --tail
+
+# Configurar variáveis
+heroku config:set JWT_SECRET="sua-chave"
+```
+
+### Railway
+
+```bash
+# Deploy automático
+git push origin main
+
+# Ver logs
+railway logs
+```
+
 ---
 
-**⚠️ IMPORTANTE:** Sempre configure variáveis de ambiente seguras em produção!
+**⚠️ IMPORTANTE:** Configure variáveis de ambiente seguras no painel do provedor!
