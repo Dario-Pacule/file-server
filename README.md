@@ -1,17 +1,17 @@
-# Servidor de Arquivos Express.js com Multer
+# 🔐 File Server - Servidor de Arquivos Seguro
 
-Um servidor Express.js que permite fazer upload de arquivos e servir arquivos estáticos.
+Um servidor Express.js com autenticação JWT que permite upload seguro de arquivos e gestão de arquivos estáticos.
 
-## Funcionalidades
+## ✨ Funcionalidades
 
-- ✅ Upload de arquivos únicos (1 de cada vez)
-- ✅ Criação automática da pasta `uploads` se não existir
-- ✅ Listagem de todos os arquivos
-- ✅ Servir arquivos estáticos
-- ✅ Obter informações de arquivos específicos
-- ✅ Eliminar arquivos
-- ✅ Limite de tamanho de arquivo (10MB)
-- ✅ CORS habilitado
+- 🔐 **Autenticação JWT** com tokens de 24h
+- 📤 **Upload seguro** (apenas usuários autenticados)
+- 📁 **Gestão de arquivos** (listar, eliminar)
+- 🌐 **Acesso público** a arquivos específicos
+- 🛡️ **Validação rigorosa** de tipos de arquivo
+- 🚫 **Rate limiting** contra spam
+- 📊 **Logging de segurança**
+- 🐳 **Docker ready**
 
 ## Instalação
 
@@ -33,85 +33,94 @@ Para desenvolvimento com auto-reload:
 npm run dev
 ```
 
-## Endpoints
+## 🔐 Autenticação
 
-### POST /upload
+O sistema usa **JWT (JSON Web Tokens)** para autenticação.
 
-Envia um arquivo para o servidor.
+### Login
 
-**Formato:** `multipart/form-data`
-**Campo:** `file`
-
-**Resposta de sucesso:**
-
-```json
+```bash
+POST /login
 {
-  "success": true,
-  "message": "Arquivo enviado com sucesso",
-  "file": {
-    "originalName": "documento.pdf",
-    "filename": "file-1234567890-123456789.pdf",
-    "size": 1024,
-    "url": "/files/file-1234567890-123456789.pdf"
-  }
+  "password": "admin123"
 }
 ```
 
-### GET /files
-
-Lista todos os arquivos no servidor.
-
-**Resposta:**
-
-```json
-{
-  "success": true,
-  "files": [
-    {
-      "filename": "file-1234567890-123456789.pdf",
-      "size": 1024,
-      "created": "2024-01-01T10:00:00.000Z",
-      "modified": "2024-01-01T10:00:00.000Z",
-      "url": "/files/file-1234567890-123456789.pdf"
-    }
-  ],
-  "count": 1
-}
-```
-
-### GET /files/:filename
-
-Obtém informações de um arquivo específico.
-
-### DELETE /files/:filename
-
-Elimina um arquivo específico.
-
-### GET /health
-
-Verifica a saúde do servidor.
-
-## Acesso aos Arquivos
-
-Os arquivos podem ser acedidos diretamente através de:
-
-```
-http://localhost:3000/files/nome-do-arquivo
-```
-
-## Exemplo de Uso com cURL
-
-### Upload de arquivo:
+### Usar Token
 
 ```bash
-curl -X POST -F "file=@caminho/para/arquivo.pdf" http://localhost:3000/upload
+Authorization: Bearer SEU_TOKEN_AQUI
 ```
 
-### Listar arquivos:
+## 📁 Endpoints da API
+
+### 🔓 **Endpoints Públicos**
+
+- `GET /health` - Health check
+- `GET /public/:filename` - Acesso direto a arquivos
+- `POST /login` - Login
+
+### 🔒 **Endpoints Protegidos** (requerem autenticação)
+
+- `POST /upload` - Upload de arquivos
+- `GET /files` - Listar arquivos
+- `GET /files/:filename` - Informações de arquivo
+- `DELETE /files/:filename` - Eliminar arquivo
+
+## 🛡️ Segurança
+
+- **Rate Limiting**: 10 uploads por IP a cada 15 minutos
+- **Validação**: Apenas tipos de arquivo seguros (PDF, imagens, documentos)
+- **Tamanho**: Máximo 5MB por arquivo
+- **Logging**: Todas as tentativas de acesso são registadas
+
+## 🚀 Exemplos de Uso
+
+### Fluxo Completo
 
 ```bash
-curl http://localhost:3000/files
+# 1. Login
+TOKEN=$(curl -s -X POST http://localhost:3000/login \
+  -H "Content-Type: application/json" \
+  -d '{"password":"admin123"}' | jq -r '.token')
+
+# 2. Upload (protegido)
+curl -X POST \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "file=@documento.pdf" \
+  http://localhost:3000/upload
+
+# 3. Listar arquivos (protegido)
+curl -H "Authorization: Bearer $TOKEN" \
+  http://localhost:3000/files
+
+# 4. Acesso público ao arquivo
+curl http://localhost:3000/public/documento-1759640920865.pdf
+
+# 5. Eliminar arquivo (protegido)
+curl -X DELETE \
+  -H "Authorization: Bearer $TOKEN" \
+  http://localhost:3000/files/documento-1759640920865.pdf
 ```
+
+## 🐳 Docker
+
+```bash
+# Construir e iniciar
+docker-compose up -d --build
+
+# Ver logs
+docker-compose logs -f
+
+# Parar
+docker-compose down
+```
+
+## 📚 Documentação Completa
+
+- **[API-DOCS.md](API-DOCS.md)** - Documentação completa da API
+- **[README-Docker.md](README-Docker.md)** - Guia Docker
+- **[SECURITY.md](SECURITY.md)** - Guia de segurança
 
 ### Aceder a um arquivo:
 

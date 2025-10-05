@@ -238,11 +238,11 @@ app.post('/login', [
   }
 });
 
-// Servir arquivos estáticos da pasta uploads (protegido)
+// Servir arquivos estáticos da pasta uploads (protegido para listagem)
 app.use('/files', authenticateToken, express.static(UPLOAD_DIR));
 
-// Endpoint para upload de arquivo único
-app.post('/upload', upload.single('file'), (req, res) => {
+// Endpoint para upload de arquivo único (protegido)
+app.post('/upload', authenticateToken, upload.single('file'), (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -259,6 +259,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
         savedAs: req.file.filename,
         size: req.file.size,
         url: `/files/${req.file.filename}`,
+        publicUrl: `/public/${req.file.filename}`,
         preserved: req.file.originalname === req.file.filename
       }
     });
@@ -311,8 +312,32 @@ app.get('/files', authenticateToken, (req, res) => {
   }
 });
 
-// Endpoint para obter informações de um arquivo específico (público)
-app.get('/files/:filename', (req, res) => {
+// Endpoint público para acessar arquivo específico
+app.get('/public/:filename', (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const filePath = path.join(UPLOAD_DIR, filename);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Arquivo não encontrado'
+      });
+    }
+
+    // Servir o arquivo diretamente
+    res.sendFile(filePath);
+  } catch (error) {
+    console.error('Erro ao servir arquivo:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor'
+    });
+  }
+});
+
+// Endpoint para obter informações de um arquivo específico (protegido)
+app.get('/files/:filename', authenticateToken, (req, res) => {
   try {
     const filename = req.params.filename;
     const filePath = path.join(UPLOAD_DIR, filename);

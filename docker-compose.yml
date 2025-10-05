@@ -6,7 +6,7 @@ services:
     container_name: file-server-app
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3120:3120"
     volumes:
       # Volume para persistir arquivos de upload
       - ./uploads:/app/uploads
@@ -20,7 +20,7 @@ services:
           "CMD",
           "node",
           "-e",
-          "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })",
+          "require('http').get('http://localhost:3120/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })",
         ]
       interval: 30s
       timeout: 10s
