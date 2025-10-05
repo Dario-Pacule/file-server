@@ -13,6 +13,9 @@ services:
     # Configurações de segurança
     security_opt:
       - no-new-privileges:true
+    # Labels para Traefik
+    labels:
+      - traefik.http.services.file-server.loadbalancer.server.port=3120
     # Health check
     healthcheck:
       test:
