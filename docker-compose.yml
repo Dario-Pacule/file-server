@@ -5,18 +5,26 @@ services:
     build: .
     container_name: file-server-app
     restart: unless-stopped
-    ports:
-      - "3120:3120"
+    # Não precisa expor portas para o host, Traefik/Caddy roteia internamente
+    # ports:
+    #   - "3120:3120"
     volumes:
       # Volume para persistir arquivos de upload
       - ./uploads:/app/uploads
-    # Configurações de segurança
     security_opt:
       - no-new-privileges:true
-    # Labels para Traefik
+    networks:
+      - yco8wo00gwo8g0gsc4c4848c # rede do Coolify Proxy
     labels:
+      # Ativar Traefik
+      - traefik.enable=true
+      # Porta interna do container
       - traefik.http.services.file-server.loadbalancer.server.port=3120
-    # Health check
+      # Roteamento HTTP/HTTPS
+      - traefik.http.routers.file-server.entrypoints=http,https
+      - traefik.http.routers.file-server.rule=Host(`file-server.winuponline.com`)
+      # Certificado LetsEncrypt automático
+      - traefik.http.routers.file-server.tls.certresolver=letsencrypt
     healthcheck:
       test:
         [
@@ -29,9 +37,12 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-    # Logging
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
+
+networks:
+  yco8wo00gwo8g0gsc4c4848c:
+    external: true
