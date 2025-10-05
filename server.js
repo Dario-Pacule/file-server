@@ -1,3 +1,6 @@
+// Carregar variáveis de ambiente primeiro
+require('dotenv').config();
+
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -381,22 +384,7 @@ app.get('/health', (req, res) => {
 
 // Rota raiz
 app.get('/', (req, res) => {
-  res.json({
-    message: 'Servidor de arquivos Express.js com Multer',
-    endpoints: {
-      'POST /login': 'Fazer login (obter token)',
-      'POST /upload': 'Enviar um arquivo (requer autenticação)',
-      'GET /files': 'Listar todos os arquivos (requer autenticação)',
-      'GET /files/:filename': 'Obter informações de um arquivo (público)',
-      'DELETE /files/:filename': 'Eliminar um arquivo (requer autenticação)',
-      'GET /health': 'Verificar saúde do servidor (público)'
-    },
-    security: {
-      'Public endpoints': ['GET /files', 'GET /files/:filename', 'GET /health'],
-      'Protected endpoints': ['POST /upload', 'DELETE /files/:filename'],
-      'Authentication': 'Bearer token required for protected endpoints'
-    }
-  });
+  // Não retorna nada, a ligação fica pendente
 });
 
 // Middleware de tratamento de erros
